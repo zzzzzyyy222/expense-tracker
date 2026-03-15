@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-slate-950 text-white">
+
+<!-- Top Navigation -->
+<div class="bg-indigo-600 text-white px-6 py-4">
+
+    <div class="flex justify-between items-center mb-2">
+        <button class="text-xl">☰</button>
+
+        <h1 class="font-semibold text-lg">
+            {{ filter_label }}
+        </h1>
+
+        <button class="text-xl">⚙</button>
+    </div>
+
+    <div class="flex justify-around text-sm">
+
+        <a href="/" class="flex flex-col items-center">
+            <span>📊</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="/analytics" class="flex flex-col items-center">
+            <span>📋</span>
+            <span>Details</span>
+        </a>
+
+        <a href="/report" class="flex flex-col items-center">
+            <span>📄</span>
+            <span>Report</span>
+        </a>
+
+        <a href="#" class="flex flex-col items-center">
+            <span>⚙</span>
+            <span>Settings</span>
+        </a>
+
+    </div>
+
+</div>
+
+
+<main class="p-5">
+<div class="h-full flex flex-col gap-4 max-w-7xl mx-auto">
+
+{% if over_budget %}
+<div class="bg-red-600 text-white px-4 py-3 rounded-lg">
+Warning: You have exceeded your monthly budget of RM {{ budget }}.
+</div>
+{% endif %}
+
+<!-- Top cards -->
+<section class="grid grid-cols-4 gap-4">
+
+<div class="bg-slate-800 rounded-xl p-4">
+<p class="text-slate-400 text-sm">Total Spending</p>
+<p class="text-3xl mt-2 text-red-400 font-semibold">RM {{ total }}</p>
+</div>
+
+<div class="bg-slate-800 rounded-xl p-4">
+<p class="text-slate-400 text-sm">Monthly Spending</p>
+<p class="text-3xl mt-2 font-semibold">RM {{ monthly_total }}</p>
+</div>
+
+<div class="bg-slate-800 rounded-xl p-4">
+<p class="text-slate-400 text-sm">Transactions</p>
+<p class="text-3xl mt-2 font-semibold">{{ expenses|length }}</p>
+</div>
+
+<div class="bg-slate-800 rounded-xl p-4">
+<p class="text-slate-400 text-sm">Top Category</p>
+<p class="text-3xl mt-2 font-semibold">{{ top_category }}</p>
+</div>
+
+</section>
+
+
+<!-- Filters + Budget -->
+<section class="grid grid-cols-2 gap-4">
+
+<div class="bg-slate-800 rounded-xl p-4">
+
+<p class="text-slate-300 mb-3 font-medium">Filter</p>
+
+<div class="flex gap-2 flex-wrap">
+
+<a href="/?filter=this_month"
+class="px-3 py-2 rounded-lg {% if filter_type == 'this_month' %}bg-blue-600 text-white{% else %}bg-slate-700 text-slate-200{% endif %}">
+This Month
+</a>
+
+<a href="/?filter=last_month"
+class="px-3 py-2 rounded-lg {% if filter_type == 'last_month' %}bg-blue-600 text-white{% else %}bg-slate-700 text-slate-200{% endif %}">
+Last Month
+</a>
+
+<a href="/?filter=six_months"
+class="px-3 py-2 rounded-lg {% if filter_type == 'six_months' %}bg-blue-600 text-white{% else %}bg-slate-700 text-slate-200{% endif %}">
+Past 6 Months
+</a>
+
+<a href="/?filter=last_year"
+class="px-3 py-2 rounded-lg {% if filter_type == 'last_year' %}bg-blue-600 text-white{% else %}bg-slate-700 text-slate-200{% endif %}">
+Last Year
+</a>
+
+</div>
+
+</div>
+
+
+<div class="bg-slate-800 rounded-xl p-4">
+
+<p class="text-slate-300 mb-3 font-medium">Monthly Budget</p>
+
+<form action="/set-budget" method="POST" class="flex gap-2 mb-3">
+
+<input
+type="number"
+step="0.01"
+name="limit"
+placeholder="Set budget"
+class="flex-1 p-2 rounded-lg bg-slate-700 text-white outline-none">
+
+<button class="bg-green-600 px-4 py-2 rounded-lg">
+Save
+</button>
+
+</form>
+
+<div class="flex justify-between text-sm text-slate-300 mb-2">
+
+<span>RM {{ monthly_total }}</span>
+<span>RM {{ budget }}</span>
+
+</div>
+
+<div class="w-full bg-slate-700 rounded-full h-3">
+
+<div
+class="{% if over_budget %}bg-red-500{% else %}bg-green-500{% endif %} h-3 rounded-full"
+style="width: {{ budget_percent }}%;">
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- Charts -->
+<section class="grid grid-cols-2 gap-4 flex-1 min-h-0">
+
+<div class="bg-slate-800 rounded-xl p-4 flex flex-col min-h-0">
+
+<div class="flex items-center justify-between mb-3">
+
+<h2 class="text-lg font-semibold">
+Monthly Spending Trend
+</h2>
+
+<span class="text-sm text-slate-400">
+{{ filter_label }}
+</span>
+
+</div>
+
+<div class="flex-1 min-h-0">
+<canvas id="lineChart"></canvas>
+</div>
+
+</div>
+
+
+<div class="bg-slate-800 rounded-xl p-4 flex flex-col min-h-0">
+
+<div class="flex items-center justify-between mb-3">
+
+<h2 class="text-lg font-semibold">
+Spending by Category
+</h2>
+
+<span class="text-sm text-slate-400">
+{{ filter_label }}
+</span>
+
+</div>
+
+<div class="flex-1 flex items-center justify-center">
+
+<div class="w-72 h-72">
+<canvas id="expenseChart"></canvas>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- Add expense + table -->
+<section class="grid grid-cols-2 gap-4 h-72">
+
+<div class="bg-slate-800 rounded-xl p-4">
+
+<h2 class="text-lg font-semibold mb-4">
+Add Expense
+</h2>
+
+<form action="/add" method="POST" class="grid grid-cols-2 gap-3">
+
+<input name="amount"
+type="number"
+step="0.01"
+placeholder="Amount"
+class="p-3 bg-slate-700 rounded-lg outline-none">
+
+
+<select name="category"
+class="p-3 bg-slate-700 rounded-lg outline-none">
+
+<option>Food</option>
+<option>Groceries</option>
+<option>Dining Out</option>
+<option>Coffee</option>
+<option>Transport</option>
+<option>Fuel</option>
+<option>Parking</option>
+<option>Shopping</option>
+<option>Bills</option>
+<option>Entertainment</option>
+<option>Health</option>
+<option>Education</option>
+<option>Travel</option>
+<option>Other</option>
+
+</select>
+
+
+<input name="note"
+placeholder="Note"
+class="p-3 bg-slate-700 rounded-lg outline-none">
+
+
+<input type="date"
+name="date"
+class="p-3 bg-slate-700 rounded-lg outline-none">
+
+
+<button
+class="col-span-2 bg-blue-600 hover:bg-blue-500 p-3 rounded-lg font-medium">
+Add Expense
+</button>
+
+</form>
+
+</div>
+
+
+<div class="bg-slate-800 rounded-xl p-4 flex flex-col min-h-0">
+
+<div class="flex items-center justify-between mb-4">
+
+<h2 class="text-lg font-semibold">
+Recent Expenses
+</h2>
+
+<a href="/report"
+class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm">
+Download PDF
+</a>
+
+</div>
+
+
+<div class="overflow-auto flex-1">
+
+<table class="w-full text-sm">
+
+<thead class="sticky top-0 bg-slate-800">
+
+<tr class="border-b border-slate-700">
+
+<th class="text-left py-2">Date</th>
+<th class="text-left py-2">Category</th>
+<th class="text-left py-2">Amount</th>
+<th class="text-left py-2">Action</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+{% for e in expenses %}
+
+<tr class="border-b border-slate-700">
+
+<td class="py-2">{{ e.date }}</td>
+<td class="py-2">{{ e.category }}</td>
+<td class="py-2">RM {{ e.amount }}</td>
+
+<td class="py-2">
+
+<a href="/edit/{{ e.id }}"
+class="text-blue-400 mr-3">Edit</a>
+
+<a href="/delete/{{ e.id }}"
+class="text-red-400">Delete</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+</main>
+
+
+<script>
+
+fetch("/chart-data")
+
+.then(res => res.json())
+
+.then(data => {
+
+new Chart(document.getElementById("expenseChart"), {
+
+type: "doughnut",
+
+data: {
+labels: data.categories,
+datasets: [{
+data: data.totals
+}]
+},
+
+options: {
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: {
+labels: { color: "white" }
+}
+}
+}
+
+});
+
+
+new Chart(document.getElementById("lineChart"), {
+
+type: "line",
+
+data: {
+labels: data.line_labels,
+datasets: [{
+label: "Spending",
+data: data.line_totals,
+borderColor: "#3b82f6",
+backgroundColor: "rgba(59,130,246,0.2)",
+tension: 0.3,
+fill: true
+}]
+},
+
+options: {
+responsive: true,
+maintainAspectRatio: false
+}
+
+});
+
+});
+
+</script>
+
+</body>
+</html>

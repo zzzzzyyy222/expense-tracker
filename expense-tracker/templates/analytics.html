@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-slate-950 text-white">
+
+<!-- Top Navigation -->
+<div class="bg-indigo-600 text-white px-6 py-4">
+
+    <div class="flex justify-between items-center mb-2">
+        <button class="text-xl">☰</button>
+
+        <h1 class="font-semibold text-lg">
+            Analytics
+        </h1>
+
+        <button class="text-xl">⚙</button>
+    </div>
+
+    <div class="flex justify-around text-sm">
+
+        <a href="/" class="flex flex-col items-center">
+            <span>📊</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="/analytics" class="flex flex-col items-center">
+            <span>📋</span>
+            <span>Details</span>
+        </a>
+
+        <a href="/report" class="flex flex-col items-center">
+            <span>📄</span>
+            <span>Report</span>
+        </a>
+
+        <a href="/" class="flex flex-col items-center">
+            <span>⚙</span>
+            <span>Settings</span>
+        </a>
+
+    </div>
+
+</div>
+
+<!-- Page Content -->
+<div class="max-w-4xl mx-auto p-6 space-y-6">
+
+    <!-- Category Chart -->
+    <div class="bg-slate-800 rounded-xl p-6">
+        <h2 class="text-lg font-semibold mb-4">Category Breakdown</h2>
+        <canvas id="categoryChart"></canvas>
+    </div>
+
+    <!-- Monthly Spending -->
+    <div class="bg-slate-800 rounded-xl p-6">
+        <h2 class="text-lg font-semibold mb-4">Monthly Spending</h2>
+        <canvas id="monthlyChart"></canvas>
+    </div>
+
+</div>
+
+<script>
+
+fetch("/chart-data")
+.then(res => res.json())
+.then(data => {
+
+new Chart(document.getElementById("categoryChart"), {
+type: "doughnut",
+data: {
+labels: data.categories,
+datasets: [{
+data: data.totals
+}]
+}
+})
+
+new Chart(document.getElementById("monthlyChart"), {
+type: "line",
+data: {
+labels: data.line_labels,
+datasets: [{
+label: "Spending",
+data: data.line_totals,
+borderColor: "#22d3ee",
+backgroundColor: "rgba(34,211,238,0.2)",
+fill: true
+}]
+}
+})
+
+})
+
+</script>
+
+</body>
+</html>

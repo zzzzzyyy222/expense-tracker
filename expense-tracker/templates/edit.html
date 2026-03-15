@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Expense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-white flex items-center justify-center min-h-screen">
+
+<div class="bg-slate-800 p-6 rounded-xl w-96">
+
+<h2 class="text-xl font-semibold mb-4">Edit Expense</h2>
+
+<form method="POST">
+
+<input
+name="amount"
+type="number"
+step="0.01"
+value="{{ expense.amount }}"
+class="w-full p-3 bg-slate-700 rounded-lg mb-3 outline-none">
+
+<select name="category" class="w-full p-3 bg-slate-700 rounded-lg mb-3 outline-none">
+
+<option {% if expense.category == "Food" %}selected{% endif %}>Food</option>
+<option {% if expense.category == "Transport" %}selected{% endif %}>Transport</option>
+<option {% if expense.category == "Shopping" %}selected{% endif %}>Shopping</option>
+<option {% if expense.category == "Bills" %}selected{% endif %}>Bills</option>
+<option {% if expense.category == "Entertainment" %}selected{% endif %}>Entertainment</option>
+<option {% if expense.category == "Other" %}selected{% endif %}>Other</option>
+
+</select>
+
+<input
+name="note"
+value="{{ expense.note }}"
+placeholder="Note"
+class="w-full p-3 bg-slate-700 rounded-lg mb-3 outline-none">
+
+<input
+type="date"
+name="date"
+value="{{ expense.date }}"
+class="w-full p-3 bg-slate-700 rounded-lg mb-4 outline-none">
+
+<button class="w-full bg-blue-600 hover:bg-blue-500 p-3 rounded-lg font-medium">
+Update Expense
+</button>
+
+</form>
+
+<a href="/" class="block text-center mt-3 text-slate-400">Cancel</a>
+
+</div>
+
+</body>
+</html>
